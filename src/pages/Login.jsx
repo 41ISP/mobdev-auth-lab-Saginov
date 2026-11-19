@@ -1,29 +1,47 @@
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import Button from "../components/Button"
 import Input from "../components/Input"
 import { useState } from "react"
+import { useUserStore } from "../store/useUserStore"
+import { api } from "../api/api"
 
 const Login = () => {
     const [error, setError] = useState("")
-    const handleSubmit = () => {}
+    const [username, setUsername] = useState("")
+    const [password, setPassword] = useState("")
+    const navigate = useNavigate()
+    const setSession = useUserStore((state) => state.setSession)
+
+    const handleSubmit = async (e) => {
+        e.preventDefault()
+        setError("")
+
+        try {
+            const res = await api.loginUser({ username, password })
+            setSession(res)
+            navigate("/")
+        } catch (err) {
+            const message =
+                err.response?.data?.error ||
+                err.response?.data?.message ||
+                "Неверное имя пользователя или пароль"
+            setError(message)
+        }
+    }
 
     return (
         <div className="container">
-            <div class="auth-container">
+            <div className="auth-container">
                 {error.length > 0 && <div className="auth-error">{error}</div>}
-                <div class="auth-header">
-                    <div class="auth-icon">🔐</div>
-                    <h1 class="auth-title">Вход</h1>
-                    <p class="auth-subtitle">Войдите в свой аккаунт</p>
-                </div>
-
-                <div class="alert alert-error" id="error-alert">
-                    Неверное имя пользователя или пароль
+                <div className="auth-header">
+                    <div className="auth-icon">🔐</div>
+                    <h1 className="auth-title">Вход</h1>
+                    <p className="auth-subtitle">Войдите в свой аккаунт</p>
                 </div>
 
                 <form id="login-form" onSubmit={handleSubmit}>
-                    <div class="form-group">
-                        <label class="form-label">Имя пользователя</label>
+                    <div className="form-group">
+                        <label className="form-label">Имя пользователя</label>
                         <Input
                             type="text"
                             class="form-input"
@@ -31,12 +49,13 @@ const Login = () => {
                             placeholder="Введите имя пользователя"
                             required
                             autocomplete="username"
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
                         />
-                        <div class="form-error">Введите имя пользователя</div>
                     </div>
 
-                    <div class="form-group">
-                        <label class="form-label">Пароль</label>
+                    <div className="form-group">
+                        <label className="form-label">Пароль</label>
                         <Input
                             type="password"
                             class="form-input"
@@ -44,8 +63,9 @@ const Login = () => {
                             placeholder="Введите пароль"
                             required
                             autocomplete="current-password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
                         />
-                        <div class="form-error">Введите пароль</div>
                     </div>
 
                     <Button type="submit" class="btn-submit">
@@ -53,9 +73,9 @@ const Login = () => {
                     </Button>
                 </form>
 
-                <div class="auth-divider">или</div>
+                <div className="auth-divider">или</div>
 
-                <div class="auth-link">
+                <div className="auth-link">
                     Нет аккаунта?
                     <Link to={"/register"}>Зарегистрироваться</Link>
                 </div>
