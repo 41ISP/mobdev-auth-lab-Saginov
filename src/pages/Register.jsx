@@ -1,29 +1,56 @@
 import { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import Button from '../components/Button'
 import Input from '../components/Input'
-import { Link } from 'react-router-dom'
+import { useUserStore } from '../store/useUserStore'
+import { api } from '../api/api'
 
 const Register = () => {
     const [error, setError] = useState('')
+    const [username, setUsername] = useState('')
+    const [email, setEmail] = useState('')
+    const [password, setPassword] = useState('')
+    const [password2, setPassword2] = useState('')
 
-    const handleSubmit = (e) => {}
+    const navigate = useNavigate()
+    const setSession = useUserStore((state) => state.setSession)
+
+    const handleSubmit = async (e) => {
+        e.preventDefault()
+        setError('')
+
+        if (password !== password2) {
+            setError('Пароли не совпадают')
+            return
+        }
+
+        try {
+            const res = await api.registerUser({ username, email, password })
+            setSession(res)
+            navigate('/')
+        } catch (err) {
+            const message =
+                err.response?.data?.error ||
+                err.response?.data?.message ||
+                'Не удалось зарегистрироваться'
+            setError(message)
+        }
+    }
 
     return (
         <div className="container">
-            <div class="auth-container">
-                <div class="auth-header">
-                    <div class="auth-icon">👤</div>
-                    <h1 class="auth-title">Регистрация</h1>
-                    <p class="auth-subtitle">Создайте новый аккаунт</p>
+            <div className="auth-container">
+                <div className="auth-header">
+                    <div className="auth-icon">👤</div>
+                    <h1 className="auth-title">Регистрация</h1>
+                    <p className="auth-subtitle">Создайте новый аккаунт</p>
                 </div>
 
-                <div class="alert alert-error" id="error-alert">
-                    Такое имя пользователя уже занято
-                </div>
                 {error.length > 0 && <div className="auth-error">{error}</div>}
+
                 <form id="register-form" onSubmit={handleSubmit}>
-                    <div class="form-group">
-                        <label class="form-label">Имя пользователя</label>
+                    <div className="form-group">
+                        <label className="form-label">Имя пользователя</label>
                         <Input
                             type="text"
                             class="form-input"
@@ -32,16 +59,15 @@ const Register = () => {
                             minlength="3"
                             required
                             autocomplete="username"
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
                         />
-                        <div class="form-hint">Минимум 3 символа</div>
-                        <div class="form-error">
-                            Имя пользователя должно быть не менее 3 символов
-                        </div>
+                        <div className="form-hint">Минимум 3 символа</div>
                     </div>
 
-                    <div class="form-group">
-                        <label class="form-label">
-                            Email <span class="optional">(необязательно)</span>
+                    <div className="form-group">
+                        <label className="form-label">
+                            Email <span className="optional">(необязательно)</span>
                         </label>
                         <Input
                             type="email"
@@ -49,12 +75,13 @@ const Register = () => {
                             name="email"
                             placeholder="example@email.com"
                             autocomplete="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
                         />
-                        <div class="form-error">Введите корректный email</div>
                     </div>
 
-                    <div class="form-group">
-                        <label class="form-label">Пароль</label>
+                    <div className="form-group">
+                        <label className="form-label">Пароль</label>
                         <Input
                             type="password"
                             class="form-input"
@@ -63,20 +90,14 @@ const Register = () => {
                             minlength="6"
                             required
                             autocomplete="new-password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
                         />
-                        <div class="password-strength">
-                            <div
-                                class="password-strength-bar"
-                                id="password-strength-bar"></div>
-                        </div>
-                        <div class="form-hint">Минимум 6 символов</div>
-                        <div class="form-error">
-                            Пароль должен быть не менее 6 символов
-                        </div>
+                        <div className="form-hint">Минимум 6 символов</div>
                     </div>
 
-                    <div class="form-group">
-                        <label class="form-label">Подтверждение пароля</label>
+                    <div className="form-group">
+                        <label className="form-label">Подтверждение пароля</label>
                         <Input
                             type="password"
                             class="form-input"
@@ -84,8 +105,9 @@ const Register = () => {
                             placeholder="Повторите пароль"
                             required
                             autocomplete="new-password"
+                            value={password2}
+                            onChange={(e) => setPassword2(e.target.value)}
                         />
-                        <div class="form-error">Пароли не совпадают</div>
                     </div>
 
                     <Button type="submit" class="btn-submit">
@@ -93,9 +115,9 @@ const Register = () => {
                     </Button>
                 </form>
 
-                <div class="auth-divider">или</div>
+                <div className="auth-divider">или</div>
 
-                <div class="auth-link">
+                <div className="auth-link">
                     <p>
                         <Link to={'/login'}>Войти</Link>
                     </p>
